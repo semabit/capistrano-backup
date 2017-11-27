@@ -4,7 +4,7 @@ Invoke Backup Task via Capistrano.
 
 ## Installation
 
-### In your Gemfile:
+### In your Gemfile:
 
 Add this line to your application's Gemfile:
 
