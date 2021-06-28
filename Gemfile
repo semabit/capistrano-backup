@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'backup-tasks', git: "git@github.com:semabit/backup-tasks.git"
+gem 'backup-tasks', git: "https://github.com/semabit/backup-tasks"
 
 # Specify your gem's dependencies in capistrano-backup.gemspec
 gemspec
