@@ -61,6 +61,13 @@ end
 desc 'Archive backup files'
 task :archive_backup do
   on roles(:app), in: :sequence, wait: 5 do
+
+    # ignore the default value. this task should be called after the
+    # "publishing" hook, at which point symlinking the release has already
+    # happened. which means current_path equals release_path, and neither can
+    # be used to find the actual backup dir.
+    #
+    # https://capistranorb.com/documentation/getting-started/flow/
     backup_dir_path = fetch(:backup_dir_path, release_path)
 
     within backup_dir_path do
