@@ -23,7 +23,7 @@ end
 desc 'Create Backup'
 task :create_backup do
   on roles(:app), in: :sequence, wait: 5 do
-    within release_path do
+    within current_path do
       with rails_env: fetch(:rails_env) do
         arguments = {
           output_file: fetch(:backup_filename),
@@ -44,14 +44,15 @@ end
 desc 'Create backup files'
 task :create_backup_files do
   on roles(:app), in: :sequence, wait: 5 do
-    within release_path do
+    within current_path do
       with rails_env: fetch(:rails_env) do
+        set :backup_dir_path, capture(:pwd)
+
         if creates_backup?
           execute(:rake, "backup:create:backup_dir")
           execute(:rake, "backup:create:db") if creates_database_backup?
           execute(:rake, "backup:create:uploads") if creates_uploads_backup?
         end
-
       end
     end
   end
@@ -60,7 +61,9 @@ end
 desc 'Archive backup files'
 task :archive_backup do
   on roles(:app), in: :sequence, wait: 5 do
-    within release_path do
+    backup_dir_path = fetch(:backup_dir_path, release_path)
+
+    within backup_dir_path do
       with rails_env: fetch(:rails_env) do
         if creates_backup?
           execute(:rake, "backup:create:tarball output_file=#{fetch(:backup_filename)}")
