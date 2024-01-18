@@ -8,6 +8,18 @@ def move_archive_files
   end
 end
 
+def creates_database_backup?
+  !fetch(:backup_skip_database, false)
+end
+
+def creates_uploads_backup?
+  !fetch(:backup_skip_uploads, false)
+end
+
+def creates_backup?
+  creates_database_backup? || creates_uploads_backup?
+end
+
 desc 'Create Backup'
 task :create_backup do
   on roles(:app), in: :sequence, wait: 5 do
@@ -34,9 +46,12 @@ task :create_backup_files do
   on roles(:app), in: :sequence, wait: 5 do
     within release_path do
       with rails_env: fetch(:rails_env) do
-        execute(:rake, "backup:create:backup_dir")
-        execute(:rake, "backup:create:db") unless fetch(:backup_skip_database, false)
-        execute(:rake, "backup:create:uploads") unless fetch(:backup_skip_uploads, false)
+        if creates_backup?
+          execute(:rake, "backup:create:backup_dir")
+          execute(:rake, "backup:create:db") if creates_database_backup?
+          execute(:rake, "backup:create:uploads") if creates_uploads_backup?
+        end
+
       end
     end
   end
@@ -47,8 +62,10 @@ task :archive_backup do
   on roles(:app), in: :sequence, wait: 5 do
     within release_path do
       with rails_env: fetch(:rails_env) do
-        execute(:rake, "backup:create:tarball output_file=#{fetch(:backup_filename)}")
-        move_archive_files
+        if creates_backup?
+          execute(:rake, "backup:create:tarball output_file=#{fetch(:backup_filename)}")
+          move_archive_files
+        end
       end
     end
   end
