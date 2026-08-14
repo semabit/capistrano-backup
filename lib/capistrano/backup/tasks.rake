@@ -1,5 +1,8 @@
 def move_archive_files
-  filenames = capture(:ls, '*.{tar,tar.gz}').split(' ')
+  filenames = []
+  filenames += capture(:ls, '*.tar').split(' ') rescue []
+  filenames += capture(:ls, '*.tar.gz').split(' ') rescue []
+
   # could be multiple files, move all of them into backup dir
   filenames.each do |filename|
     filename = filename.strip
